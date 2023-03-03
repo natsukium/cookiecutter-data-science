@@ -73,15 +73,16 @@ class TestCookieSetup(object):
         reqs_path = self.path / 'requirements.txt'
         assert reqs_path.exists()
         assert no_curlies(reqs_path)
-        if pytest.param.get('python_interpreter'):
-            with open(reqs_path) as fin:
-                lines = list(map(lambda x: x.strip(), fin.readlines()))
-            assert 'pathlib2' in lines
 
     def test_makefile(self):
         makefile_path = self.path / 'Makefile'
         assert makefile_path.exists()
         assert no_curlies(makefile_path)
+
+    def test_interpreter(self):
+        makefile_path = self.path / "Makefile"
+        with open(makefile_path) as fin:
+            assert 'PYTHON_INTERPRETER = python3\n' in fin.readlines()
 
     def test_folders(self):
         expected_dirs = [
