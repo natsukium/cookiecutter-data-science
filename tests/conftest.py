@@ -10,6 +10,7 @@ args = {
         'project_name': 'DrivenData',
         'author_name': 'DrivenData',
         'open_source_license': 'BSD-3-Clause',
+        'package_manager': 'pip',
         }
 
 
@@ -20,7 +21,7 @@ def system_check(basename):
     return basename
 
 
-@pytest.fixture(scope='class', params=[{}, args])
+@pytest.fixture(scope='class', params=[{'package_manager': 'pip'}, args])
 def default_baked_project(tmpdir_factory, request):
     temp = tmpdir_factory.mktemp('data-project')
     out_dir = Path(temp).resolve()
