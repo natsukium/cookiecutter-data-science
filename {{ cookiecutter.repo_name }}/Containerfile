@@ -1,0 +1,48 @@
+FROM ubuntu:22.04
+
+ARG PYTHON_VERSION=3.10
+
+ENV DEBIAN_FRONTEND noninteractive
+ENV BUILD_PATH /build
+ENV HOME_PATH /root
+ENV PATH $HOME_PATH/.asdf/shims:$BUILD_PATH/asdf/bin:$PATH
+ENV ASDF_VERSION v0.11.2
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+WORKDIR /build
+
+#hadolint ignore=DL3008
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        curl \
+        git \
+        libbz2-dev \
+        libffi-dev \
+        liblzma-dev \
+        libncursesw5-dev \
+        libreadline-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        libxml2-dev \
+        libxmlsec1-dev \
+        tk-dev \
+        xz-utils \
+        zlib1g-dev \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+# hadolint ignore=SC1091
+RUN git clone https://github.com/asdf-vm/asdf.git --branch $ASDF_VERSION \
+ && asdf plugin add python \
+ && asdf install python $(asdf list all python $PYTHON_VERSION | grep -E "\.[0-9]+$" | tail -n 1) \
+ && asdf global python $(asdf list all python $PYTHON_VERSION | grep -E "\.[0-9]+$" | tail -n 1) \
+ && . $BUILD_PATH/asdf/lib/asdf.sh
+
+WORKDIR $HOME_PATH
+COPY ./requirements.txt ./setup.py ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+CMD ["bash"]
