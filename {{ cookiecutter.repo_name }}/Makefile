@@ -1,4 +1,4 @@
-.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3
+.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3 image container_run
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -9,6 +9,9 @@ BUCKET = {{ cookiecutter.s3_bucket }}
 PROFILE = {{ cookiecutter.aws_profile }}
 PROJECT_NAME = {{ cookiecutter.repo_name }}
 PYTHON_INTERPRETER = {{ cookiecutter._python_interpreter }}
+PYTHON_VERSION := 3.10
+CONTAINER_RUNTIME := docker
+IMAGE_NAME := $(PROJECT_NAME)
 
 ifeq (,$(shell which conda))
 HAS_CONDA=False
@@ -75,6 +78,14 @@ endif
 ## Test python environment is setup correctly
 test_environment:
 	$(PYTHON_INTERPRETER) test_environment.py
+
+## Build container image
+image: Containerfile
+	DOCKER_BUILDKIT=1 $(CONTAINER_RUNTIME) image build --build-arg PYTHON_VERSION=$(PYTHON_VERSION) -f $< . -t $(IMAGE_NAME)
+
+## Enter the container
+container_run: image
+	$(CONTAINER_RUNTIME) container run --rm -it $(IMAGE_NAME)
 
 #################################################################################
 # PROJECT RULES                                                                 #
