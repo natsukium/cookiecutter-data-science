@@ -79,6 +79,11 @@ class TestCookieSetup(object):
         assert makefile_path.exists()
         assert no_curlies(makefile_path)
 
+    def test_interpreter(self):
+        makefile_path = self.path / "Makefile"
+        with open(makefile_path) as fin:
+            assert 'PYTHON_INTERPRETER = python3\n' in fin.readlines()
+
     def test_folders(self):
         expected_dirs = [
             'data',
