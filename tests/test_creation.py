@@ -160,8 +160,16 @@ class TestCookieSetup(object):
         exit_code_import_check = subprocess.run(['make', 'container_import_check'], cwd=self.path).returncode
         assert exit_code_import_check == 0
 
+    @pytest.mark.slow
+    def test_github_actions(self):
+        # this test fails if run in parallel
+        exit_code = subprocess.run(['act'], cwd=self.path).returncode
+        assert exit_code == 0
+
     def test_folders(self):
         expected_dirs = [
+            '.github',
+            '.github/workflows',
             'data',
             'data/external',
             'data/interim',

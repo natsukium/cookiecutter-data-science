@@ -34,6 +34,7 @@
             hadolint
             nil
             alejandra
+            act
           ];
         };
       }
