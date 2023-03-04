@@ -17,12 +17,14 @@
             cookiecutter
             pytest
             setuptools
+            tomli
           ];
       in {
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
             (python39.withPackages python-packages)
             black
+            poetry
             ruff
             nodePackages.pyright
             nodePackages.bash-language-server
