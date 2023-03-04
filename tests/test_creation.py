@@ -88,6 +88,13 @@ class TestCookieSetup(object):
 
     def test_pyproject_toml(self):
         assert self.pyproject_toml_path.exists()
+
+        with self.pyproject_toml_path.open('rb') as f:
+            try:
+                tomllib.load(f)
+            except tomllib.TOMLDecodeError:
+                assert False
+
         if self.package_manager == 'poetry':
             assert subprocess.run(["poetry", "check"], cwd=self.path).returncode == 0
 
