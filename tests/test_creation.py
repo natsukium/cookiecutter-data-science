@@ -170,6 +170,7 @@ class TestCookieSetup(object):
         expected_dirs = [
             '.github',
             '.github/workflows',
+            '.vscode',
             'data',
             'data/external',
             'data/interim',

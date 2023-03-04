@@ -1,0 +1,9 @@
+{
+  "extensions.ignoreRecommendations": false,
+  "python.languageServer": "Pylance",
+  "python.linting.flake8Enabled": true,
+  "python.formatting.provider": "black",
+  "python.linting.mypyEnabled": true,
+  "python.testing.pytestEnabled": true,
+  "autoDocstring.docstringFormat": "google",
+}
