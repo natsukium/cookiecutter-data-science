@@ -87,10 +87,9 @@ class TestCookieSetup(object):
                 assert 'DrivenData' == next(fin).strip()
 
     def test_pyproject_toml(self):
-        if self.package_manager == 'pip':
-            pytest.skip('there is no pyproject.toml')
         assert self.pyproject_toml_path.exists()
-        assert subprocess.run(["poetry", "check"], cwd=self.path).returncode == 0
+        if self.package_manager == 'poetry':
+            assert subprocess.run(["poetry", "check"], cwd=self.path).returncode == 0
 
     def test_setup(self):
         if self.package_manager != 'pip':
