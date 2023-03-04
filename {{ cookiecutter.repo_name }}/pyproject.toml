@@ -31,5 +31,9 @@ build-backend = "poetry.core.masonry.api"
 {% endif %}
 
 [tool.flake8]
-max-line-length = 79
+max-line-length = 88
+extend-ignore = ["E203"]
 max-complexity = 10
+
+[tool.isort]
+profile = "black"
