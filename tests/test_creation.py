@@ -3,6 +3,7 @@ import pytest
 import subprocess
 from subprocess import check_output
 from conftest import system_check
+from pathlib import Path
 
 try:
     import tomllib
@@ -33,6 +34,18 @@ class TestCookieSetup(object):
     @property
     def pyproject_toml_path(self):
         return self.path / 'pyproject.toml'
+
+    @property
+    def reqs_path(self) -> Path:
+        return self.path / 'requirements.txt'
+
+    @property
+    def setup_(self) -> Path:
+        return self.path / 'setup.py'
+
+    @property
+    def test_environment_path(self) -> Path:
+        return self.path / 'test_environment.py'
 
     def test_project_name(self):
         project = self.path
@@ -168,3 +181,10 @@ class TestCookieSetup(object):
         abs_expected_dirs = [str(self.path / d) for d in expected_dirs]
         abs_dirs, _, _ = list(zip(*os.walk(self.path)))
         assert len(set(abs_expected_dirs + ignored_dirs) - set(abs_dirs)) == 0
+
+    def test_post_hook(self):
+        if pytest.param.get('package_manager') == 'pip':
+            return
+        assert not self.reqs_path.exists()
+        assert not self.setup_.exists()
+        assert not self.test_environment_path.exists()
