@@ -6,12 +6,20 @@ from cookiecutter import main
 
 CCDS_ROOT = Path(__file__).parents[1].resolve()
 
+PROJECT_NAME = 'DrivenData'
+AUTHOR_NAME = 'DrivenData'
+
 args = {
-        'project_name': 'DrivenData',
-        'author_name': 'DrivenData',
+        'project_name': PROJECT_NAME,
+        'author_name': AUTHOR_NAME,
         'open_source_license': 'BSD-3-Clause',
         'package_manager': 'pip',
         }
+use_poetry = {
+    'project_name': PROJECT_NAME,
+    'author_name': AUTHOR_NAME,
+    'package_manager': 'poetry'
+}
 
 
 def system_check(basename):
@@ -21,7 +29,7 @@ def system_check(basename):
     return basename
 
 
-@pytest.fixture(scope='class', params=[{'package_manager': 'pip'}, args])
+@pytest.fixture(scope='class', params=[{'package_manager': 'pip'}, args, use_poetry])
 def default_baked_project(tmpdir_factory, request):
     temp = tmpdir_factory.mktemp('data-project')
     out_dir = Path(temp).resolve()

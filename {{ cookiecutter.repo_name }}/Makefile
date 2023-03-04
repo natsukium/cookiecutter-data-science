@@ -1,4 +1,4 @@
-.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3 image container_run
+.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3 image container_run lockfile
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -8,7 +8,8 @@ PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 BUCKET = {{ cookiecutter.s3_bucket }}
 PROFILE = {{ cookiecutter.aws_profile }}
 PROJECT_NAME = {{ cookiecutter.repo_name }}
-PYTHON_INTERPRETER = {{ cookiecutter._python_interpreter }}
+PYTHON_PACKAGE_MANAGER := {{ cookiecutter.package_manager }}
+PYTHON_INTERPRETER = {% if cookiecutter.package_manager != 'pip' %}$(PYTHON_PACKAGE_MANAGER) run python{% else %}{{ cookiecutter._python_interpreter }}{% endif %}
 PYTHON_VERSION := 3.10
 CONTAINER_RUNTIME := docker
 IMAGE_NAME := $(PROJECT_NAME)
@@ -24,9 +25,17 @@ endif
 #################################################################################
 
 ## Install Python Dependencies
+{%- if cookiecutter.package_manager == 'pip' %}
 requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
+{%- elif cookiecutter.package_manager == 'poetry' %}
+requirements: pyproject.toml poetry.lock
+	$(PYTHON_PACKAGE_MANAGER) install
+lockfile: poetry.lock
+poetry.lock: pyproject.toml
+	$(PYTHON_PACKAGE_MANAGER) lock --no-update
+{%- endif %}
 
 ## Make Dataset
 data: requirements
@@ -57,6 +66,7 @@ else
 	aws s3 sync s3://$(BUCKET)/data/ data/ --profile $(PROFILE)
 endif
 
+{%- if cookiecutter.package_manager == 'pip' %}
 ## Set up python interpreter environment
 create_environment:
 ifeq (True,$(HAS_CONDA))
@@ -78,6 +88,7 @@ endif
 ## Test python environment is setup correctly
 test_environment:
 	$(PYTHON_INTERPRETER) test_environment.py
+{%- endif %}
 
 ## Build container image
 image: Containerfile
