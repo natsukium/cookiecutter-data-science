@@ -134,8 +134,12 @@ class TestCookieSetup(object):
 
     @pytest.mark.slow
     def test_build_image(self):
-        exit_code = subprocess.run(["make", "image"], cwd=self.path).returncode
-        assert exit_code == 0
+        if pytest.param.get('package_manager') != 'pip':
+            subprocess.run(['make', 'lockfile'], cwd=self.path)
+        exit_code_build = subprocess.run(["make", "image"], cwd=self.path).returncode
+        assert exit_code_build == 0
+        exit_code_import_check = subprocess.run(['make', 'container_import_check'], cwd=self.path).returncode
+        assert exit_code_import_check == 0
 
     def test_folders(self):
         expected_dirs = [

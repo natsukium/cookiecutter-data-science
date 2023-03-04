@@ -1,4 +1,4 @@
-.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3 image container_run lockfile
+.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3 image container_run lockfile container_import_check
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -97,6 +97,10 @@ image: Containerfile
 ## Enter the container
 container_run: image
 	$(CONTAINER_RUNTIME) container run --rm -it $(IMAGE_NAME)
+
+## Check the libraries are imported correctly
+container_import_check: image
+	$(CONTAINER_RUNTIME) container run --rm $(IMAGE_NAME) bash -c "$(PYTHON_INTERPRETER) -c 'import click; import flake8'"
 
 #################################################################################
 # PROJECT RULES                                                                 #
