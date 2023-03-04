@@ -32,7 +32,7 @@ def no_curlies(filepath):
 @pytest.mark.usefixtures("default_baked_project")
 class TestCookieSetup(object):
     @property
-    def pyproject_toml_path(self):
+    def pyproject_toml_path(self) -> Path:
         return self.path / 'pyproject.toml'
 
     @property
@@ -47,6 +47,10 @@ class TestCookieSetup(object):
     def test_environment_path(self) -> Path:
         return self.path / 'test_environment.py'
 
+    @property
+    def package_manager(self) -> str:
+        return pytest.param.get('package_manager')
+
     def test_project_name(self):
         project = self.path
         if pytest.param.get('project_name'):
@@ -57,9 +61,8 @@ class TestCookieSetup(object):
 
     def test_author(self):
         default = 'Your name (or your organization/company/team)'
-        if pytest.param.get('package_manager') == 'pip':
-            setup_ = self.path / 'setup.py'
-            args = ['python', str(setup_), '--author']
+        if self.package_manager == 'pip':
+            args = ['python', str(self.setup_), '--author']
             p = check_output(args).decode('ascii').strip()
             if pytest.param.get('author_name'):
                 assert p == 'DrivenData'
@@ -84,16 +87,15 @@ class TestCookieSetup(object):
                 assert 'DrivenData' == next(fin).strip()
 
     def test_pyproject_toml(self):
-        if pytest.param.get('package_manager') == 'pip':
-            return
+        if self.package_manager == 'pip':
+            pytest.skip('there is no pyproject.toml')
         assert self.pyproject_toml_path.exists()
         assert subprocess.run(["poetry", "check"], cwd=self.path).returncode == 0
 
     def test_setup(self):
-        if pytest.param.get('package_manager') != 'pip':
-            return
-        setup_ = self.path / 'setup.py'
-        args = ['python', str(setup_), '--version']
+        if self.package_manager != 'pip':
+            pytest.skip('there is no setup.py')
+        args = ['python', str(self.setup_), '--version']
         p = check_output(args).decode('ascii').strip()
         assert p == '0.1.0'
 
@@ -103,27 +105,26 @@ class TestCookieSetup(object):
         assert no_curlies(license_path)
 
     def test_license_type(self):
-        if pytest.param.get('package_manager') == 'pip':
-            setup_ = self.path / 'setup.py'
-            args = ['python', str(setup_), '--license']
+        license = pytest.param.get('open_source_license')
+        if self.package_manager == 'pip':
+            args = ['python', str(self.setup_), '--license']
             p = check_output(args).decode('ascii').strip()
-            if pytest.param.get('open_source_license'):
+            if license:
                 assert p == 'BSD-3'
             else:
                 assert p == 'MIT'
         else:
             with self.pyproject_toml_path.open('rb') as f:
                 content = tomllib.load(f)
-            _license: str = content.get('tool').get('poetry').get('license')
-            if pytest.param.get('open_source_license'):
-                assert _license == pytest.param.get('open_source_licesnse')
+            actual: str = content.get('tool').get('poetry').get('license')
+            if license:
+                assert actual == license
 
     def test_requirements(self):
-        if pytest.param.get('package_manager') != 'pip':
-            return
-        reqs_path = self.path / 'requirements.txt'
-        assert reqs_path.exists()
-        assert no_curlies(reqs_path)
+        if self.package_manager != 'pip':
+            pytest.skip('there is no requirements.txt')
+        assert self.reqs_path.exists()
+        assert no_curlies(self.reqs_path)
 
     def test_makefile(self):
         makefile_path = self.path / 'Makefile'
@@ -131,10 +132,9 @@ class TestCookieSetup(object):
         assert no_curlies(makefile_path)
 
     def test_interpreter(self):
-        makefile_path = self.path / "Makefile"
-        package_manager = pytest.param.get('package_manager')
+        makefile_path = self.path / 'Makefile'
         with open(makefile_path) as fin:
-            if package_manager == 'pip':
+            if self.package_manager == 'pip':
                 assert 'PYTHON_INTERPRETER = python3\n' in fin.readlines()
             else:
                 assert ('PYTHON_INTERPRETER = $(PYTHON_PACKAGE_MANAGER) run python\n'
@@ -147,9 +147,9 @@ class TestCookieSetup(object):
 
     @pytest.mark.slow
     def test_build_image(self):
-        if pytest.param.get('package_manager') != 'pip':
+        if self.package_manager != 'pip':
             subprocess.run(['make', 'lockfile'], cwd=self.path)
-        exit_code_build = subprocess.run(["make", "image"], cwd=self.path).returncode
+        exit_code_build = subprocess.run(['make', 'image'], cwd=self.path).returncode
         assert exit_code_build == 0
         exit_code_import_check = subprocess.run(['make', 'container_import_check'], cwd=self.path).returncode
         assert exit_code_import_check == 0
@@ -183,8 +183,8 @@ class TestCookieSetup(object):
         assert len(set(abs_expected_dirs + ignored_dirs) - set(abs_dirs)) == 0
 
     def test_post_hook(self):
-        if pytest.param.get('package_manager') == 'pip':
-            return
+        if self.package_manager == 'pip':
+            pytest.skip('post hook is not executed')
         assert not self.reqs_path.exists()
         assert not self.setup_.exists()
         assert not self.test_environment_path.exists()
