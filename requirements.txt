@@ -3,3 +3,6 @@ mkdocs-cinder
 cookiecutter
 pytest
 setuptools
+tomli; python_version < "3.11"
+
+poetry

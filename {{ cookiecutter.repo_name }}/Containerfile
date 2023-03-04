@@ -7,6 +7,11 @@ ENV BUILD_PATH /build
 ENV HOME_PATH /root
 ENV PATH $HOME_PATH/.asdf/shims:$BUILD_PATH/asdf/bin:$PATH
 ENV ASDF_VERSION v0.11.2
+{%- if cookiecutter.package_manager == "poetry" %}
+ENV POETRY_VERSION 1.4.0
+ENV POETRY_HOME /opt/poetry
+ENV PATH $POETRY_HOME/bin:$PATH
+{%- endif %}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -42,7 +47,14 @@ RUN git clone https://github.com/asdf-vm/asdf.git --branch $ASDF_VERSION \
  && . $BUILD_PATH/asdf/lib/asdf.sh
 
 WORKDIR $HOME_PATH
+{%- if cookiecutter.package_manager == "poetry" %}
+COPY ./pyproject.toml ./poetry.lock ./README.md ./
+COPY ./src ./src
+RUN curl -sSL https://install.python-poetry.org | python3 - --version $POETRY_VERSION \
+ && poetry install
+{%- else %}
 COPY ./requirements.txt ./setup.py ./
 RUN pip install --no-cache-dir -r requirements.txt
+{%- endif %}
 
 CMD ["bash"]
