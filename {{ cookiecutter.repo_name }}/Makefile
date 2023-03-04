@@ -1,4 +1,4 @@
-.PHONY: clean data lint requirements sync_data_to_s3 sync_data_from_s3 image container_run lockfile container_import_check
+.PHONY: clean data lint format type_check requirements sync_data_to_s3 sync_data_from_s3 image container_run lockfile container_import_check
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -48,7 +48,16 @@ clean:
 
 ## Lint using flake8
 lint:
-	flake8 src
+	$(PYTHON_INTERPRETER) -m flake8 src
+
+## Format using black and isort
+format:
+	$(PYTHON_INTERPRETER) -m isort src
+	$(PYTHON_INTERPRETER) -m black src
+
+## Type check using mypy
+type_check:
+	$(PYTHON_INTERPRETER) -m mypy src
 
 ## Upload Data to S3
 sync_data_to_s3:
