@@ -1,4 +1,4 @@
-.PHONY: clean data lint format type_check requirements sync_data_to_s3 sync_data_from_s3 image container_run lockfile container_import_check
+.PHONY: clean data lint format type_check requirements sync_data_to_s3 sync_data_from_s3 image container_run lockfile container_import_check test
 
 #################################################################################
 # GLOBALS                                                                       #
@@ -54,6 +54,10 @@ lint:
 format:
 	$(PYTHON_INTERPRETER) -m isort src
 	$(PYTHON_INTERPRETER) -m black src
+
+## Test using pytest
+test:
+	$(PYTHON_INTERPRETER) -m pytest
 
 ## Type check using mypy
 type_check:
